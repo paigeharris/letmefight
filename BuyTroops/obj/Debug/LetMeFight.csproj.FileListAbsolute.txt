@@ -1,0 +1,7 @@
+C:\Users\Paige\Documents\GitHub\letmefight\BuyTroops\obj\Debug\LetMeFight.csproj.AssemblyReference.cache
+C:\Users\Paige\Documents\GitHub\letmefight\BuyTroops\obj\Debug\LetMeFight.csproj.CoreCompileInputs.cache
+C:\Program Files (x86)\Steam\steamapps\common\Mount & Blade II Bannerlord\Modules\LetMeFight\bin\Win64_Shipping_Client\LetMeFight.dll
+C:\Program Files (x86)\Steam\steamapps\common\Mount & Blade II Bannerlord\Modules\LetMeFight\bin\Win64_Shipping_Client\LetMeFight.pdb
+C:\Users\Paige\Documents\GitHub\letmefight\BuyTroops\obj\Debug\LetMeFight.csproj.CopyComplete
+C:\Users\Paige\Documents\GitHub\letmefight\BuyTroops\obj\Debug\LetMeFight.dll
+C:\Users\Paige\Documents\GitHub\letmefight\BuyTroops\obj\Debug\LetMeFight.pdb
