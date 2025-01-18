@@ -1,7 +1,7 @@
 <Module>
     <Name value="Just Let Me Fight!"/>
     <Id value="LetMeFight"/>
-    <Version value="v1.1.6"/>
+    <Version value="v1.9.0.3526"/>
     <SingleplayerModule value="true"/>
     <MultiplayerModule value="false"/>
     <DependedModules>
