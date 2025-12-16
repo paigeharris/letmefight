@@ -20,7 +20,7 @@ namespace LetMeFight
         {
             if (Hero.MainHero.HitPoints > 20)
                 return;
-            Hero.MainHero.HitPoints = 21;
+            Hero.MainHero.HitPoints = 25;
             GameMenu.ActivateGameMenu(menuId);
         }), true, 1, true);
 
