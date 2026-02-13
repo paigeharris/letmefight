@@ -60,4 +60,23 @@
   <Target Name="CopySubModuleXmlToModule" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' and Exists('$(MSBuildThisFileDirectory)..\SubModule.xml')">
     <Copy SourceFiles="$(MSBuildThisFileDirectory)..\SubModule.xml" DestinationFiles="$(ModuleRootDir)\SubModule.xml" SkipUnchangedFiles="true" />
   </Target>
+
+  <Target Name="PackageModuleZip" AfterTargets="CopySubModuleXmlToModule" Condition="'$(Configuration)' == 'Debug' and Exists('$(ModuleRootDir)\SubModule.xml')">
+    <XmlPeek XmlInputPath="$(MSBuildThisFileDirectory)..\SubModule.xml" Query="/Module/Version/@value">
+      <Output TaskParameter="Result" PropertyName="ModuleVersion" />
+    </XmlPeek>
+
+    <PropertyGroup>
+      <ModuleVersion Condition="'$(ModuleVersion)' == ''">dev</ModuleVersion>
+      <ReleaseRootDir>$(MSBuildThisFileDirectory)..\releases</ReleaseRootDir>
+      <ReleaseVersionDir>$(ReleaseRootDir)\$(ModuleVersion)</ReleaseVersionDir>
+      <ReleaseZipFileName>LetMeFight $(ModuleVersion).zip</ReleaseZipFileName>
+      <ReleaseZipPath>$(ReleaseRootDir)\$(ReleaseZipFileName)</ReleaseZipPath>
+      <ReleaseVersionZipPath>$(ReleaseVersionDir)\$(ReleaseZipFileName)</ReleaseVersionZipPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(ReleaseRootDir);$(ReleaseVersionDir)" />
+
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -Command &quot;&amp; { Compress-Archive -Path '$(ModuleRootDir)' -DestinationPath '$(ReleaseZipPath)' -Force; Compress-Archive -Path '$(ModuleRootDir)' -DestinationPath '$(ReleaseVersionZipPath)' -Force }&quot;" />
+  </Target>
 </Project>

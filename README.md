@@ -29,4 +29,7 @@ $env:BANNERLORD_DIR = "D:\SteamLibrary\steamapps\common\Mount & Blade II Bannerl
 
 - `Debug`: deploys `LetMeFight.dll` to `Modules\LetMeFight\bin\Win64_Shipping_Client`
 - `Debug`: also copies `SubModule.xml` to `Modules\LetMeFight\SubModule.xml`
+- `Debug`: also creates release zips in:
+  - `releases\LetMeFight v<module-version>.zip`
+  - `releases\<module-version>\LetMeFight v<module-version>.zip`
 - `Release`: outputs to `BuyTroops\bin\<Platform>\Release`
