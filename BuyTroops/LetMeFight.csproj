@@ -55,6 +55,10 @@
       <HintPath>$(GameBinDir)\TaleWorlds.MountAndBlade.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="TaleWorlds.ObjectSystem">
+      <HintPath>$(GameBinDir)\TaleWorlds.ObjectSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <Target Name="CopySubModuleXmlToModule" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug' and Exists('$(MSBuildThisFileDirectory)..\SubModule.xml')">
