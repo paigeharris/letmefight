@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.Library;
@@ -7,36 +7,49 @@ namespace LetMeFight
 {
     public class LetPlayerFight : CampaignBehaviorBase
     {
-        private CampaignGameStarter _obj = (CampaignGameStarter)null;
-        private string _menuOptionId = "LetMeFight";
+        private const string MenuOptionId = "LetMeFight";
+        private CampaignGameStarter _gameStarter;
 
-        public void debugMsg(string message) => InformationManager.DisplayMessage(new InformationMessage(message));
+        private static void DebugMsg(string message) => InformationManager.DisplayMessage(new InformationMessage(message));
 
-        public void addFightOption(string menuId) => this._obj.AddGameMenuOption(menuId, this._menuOptionId, "Let Me Fight!", (GameMenuOption.OnConditionDelegate)(grr =>
+        private void AddFightOption(string menuId)
         {
-            grr.optionLeaveType = GameMenuOption.LeaveType.Raid;
-            return Hero.MainHero.IsWounded;
-        }), (GameMenuOption.OnConsequenceDelegate)(grr =>
-        {
-            if (Hero.MainHero.HitPoints > 20)
+            if (_gameStarter == null)
+            {
+                DebugMsg("LetMeFight: game starter is not initialized yet.");
+                //
+                //
                 return;
-            Hero.MainHero.HitPoints = 25;
-            GameMenu.ActivateGameMenu(menuId);
-        }), true, 1, true);
+            }
 
-        public void letPlayerFightFunc(CampaignGameStarter obj)
-        {
-            this.addFightOption("encounter");
-            this.addFightOption("menu_siege_strategies");
+            _gameStarter.AddGameMenuOption(menuId, MenuOptionId, "Let Me Fight!", grr =>
+            {
+                grr.optionLeaveType = GameMenuOption.LeaveType.Raid;
+                return Hero.MainHero.IsWounded;
+            }, grr =>
+            {
+                if (Hero.MainHero.HitPoints > 20)
+                    return;
+
+                Hero.MainHero.HitPoints = 25;
+                GameMenu.ActivateGameMenu(menuId);
+            }, true, 1, true);
         }
 
-        public void OnSessionLaunched(CampaignGameStarter obj)
+        private void RegisterFightOptions()
         {
-            this._obj = obj;
-            this.letPlayerFightFunc(this._obj);
+            AddFightOption("encounter");
+            AddFightOption("menu_siege_strategies");
         }
 
-        public override void RegisterEvents() => CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener((object)this, new Action<CampaignGameStarter>(this.OnSessionLaunched));
+        private void OnSessionLaunched(CampaignGameStarter gameStarter)
+        {
+            _gameStarter = gameStarter;
+            RegisterFightOptions();
+        }
+
+        public override void RegisterEvents() =>
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, new Action<CampaignGameStarter>(OnSessionLaunched));
 
         public override void SyncData(IDataStore dataStore)
         {

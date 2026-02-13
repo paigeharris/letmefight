@@ -1,4 +1,4 @@
-﻿using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
 
@@ -6,24 +6,21 @@ namespace LetMeFight
 {
     public class Main : MBSubModuleBase
     {
-        private LetPlayerFight _letPlayerFightBehavior = (LetPlayerFight)null;
-        public string menuOptionId = "LetMeFight";
-
-        protected override void OnSubModuleLoad()
-        {
-        }
+        private LetPlayerFight _letPlayerFightBehavior;
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
             if (!(game.GameType is Campaign))
                 return;
-            this.AddBehaviors((CampaignGameStarter)gameStarterObject);
+
+            if (gameStarterObject is CampaignGameStarter campaignStarter)
+                AddBehaviors(campaignStarter);
         }
 
-        private void AddBehaviors(CampaignGameStarter gameIntializer)
+        private void AddBehaviors(CampaignGameStarter gameInitializer)
         {
-            this._letPlayerFightBehavior = new LetPlayerFight();
-            gameIntializer.AddBehavior((CampaignBehaviorBase)this._letPlayerFightBehavior);
+            _letPlayerFightBehavior = new LetPlayerFight();
+            gameInitializer.AddBehavior(_letPlayerFightBehavior);
         }
     }
 }
