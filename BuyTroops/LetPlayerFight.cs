@@ -1,6 +1,7 @@
 ﻿using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Encounters;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -14,7 +15,7 @@ namespace LetMeFight
     {
         private CampaignGameStarter _starter;
 
-        private const int TargetHp = 25;
+        private const int TargetHp = 21;
         private const int KnightsToAdd = 12;
         private const string KnightId = "vlandian_knight";
 
@@ -48,28 +49,51 @@ namespace LetMeFight
                     args.optionLeaveType = GameMenuOption.LeaveType.Leave;
 
                     if (show)
-                        args.Tooltip = new TextObject($"Sets you to {TargetHp} HP, heals, adds {KnightsToAdd} Vlandian Knights, then brings you to your home settlement.");
+                    {
+                        args.Tooltip = new TextObject(
+                            $"Sets you to {TargetHp} HP, heals, adds {KnightsToAdd} Vlandian Knights, then brings you to your home settlement."
+                        );
+                    }
 
                     return show;
                 },
                 (MenuCallbackArgs args) =>
                 {
-                    SantaLore();
-                    SantaWarn();
-
-                    HealHero();
-                    AddKnights();
-                    GoToHomeSettlement();
+                    ExecuteSantaRescue();
                 },
                 isLeave: true,
                 index: 0
             );
         }
 
+        private void ExecuteSantaRescue()
+        {
+            try
+            {
+                SantaLore();
+                SantaWarn();
+
+                HealHero();
+                AddKnights();
+
+                if (!TryGoToHomeSettlement())
+                {
+                    InformationManager.DisplayMessage(new InformationMessage(
+                        "Santa healed you and brought knights, but could not safely move you home."
+                    ));
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine("LetMeFight rescue failed: " + ex);
+                InformationManager.DisplayMessage(new InformationMessage(
+                    "Let Me Fight blocked a rescue error and left you in the current menu instead of crashing."
+                ));
+            }
+        }
+
         private void SantaWarn()
         {
-            // "in red or something" — Bannerlord chat supports color tags.
-            // If your build ignores this, it will just show plain text.
             InformationManager.DisplayMessage(new InformationMessage(
                 "<color=#FF3333>Santa Warns You Not to Wait in town</color>"
             ));
@@ -77,7 +101,6 @@ namespace LetMeFight
 
         private void SantaLore()
         {
-            // A tiny Calradia-flavored Christmas tale in chat.
             InformationManager.DisplayMessage(new InformationMessage(
                 "A bell rings over the snow. Twelve Vlandian riders appear through the whiteout, lances tucked, horses steaming."
             ));
@@ -88,8 +111,8 @@ namespace LetMeFight
                 "No banners. No names. Only hoofbeats... and a laugh that sounds like winter itself."
             ));
             InformationManager.DisplayMessage(new InformationMessage(
-               " "
-           ));
+                " "
+            ));
         }
 
         private void HealHero()
@@ -97,7 +120,7 @@ namespace LetMeFight
             var hero = Hero.MainHero;
             if (hero == null) return;
 
-            hero.HitPoints = TargetHp;
+            hero.HitPoints = Math.Min(TargetHp, hero.MaxHitPoints);
             hero.Heal(1, addXp: false);
         }
 
@@ -112,18 +135,58 @@ namespace LetMeFight
             mp.MemberRoster.AddToCounts(knight, KnightsToAdd);
         }
 
-        private void GoToHomeSettlement()
+        private bool TryGoToHomeSettlement()
         {
-            var mp = MobileParty.MainParty;
-            if (mp == null) return;
+            var mainParty = MobileParty.MainParty;
+            Settlement home = ResolveHomeSettlement();
+            if (mainParty == null || home == null)
+                return false;
 
+            ResetEncounterState(mainParty);
+            EncounterManager.StartSettlementEncounter(mainParty, home);
+            return true;
+        }
+
+        private void ResetEncounterState(MobileParty mainParty)
+        {
+            if (PlayerEncounter.Current != null)
+            {
+                PlayerEncounter.Finish();
+                return;
+            }
+
+            if (mainParty.CurrentSettlement != null)
+            {
+                LeaveSettlementAction.ApplyForParty(mainParty);
+                PlayerEncounter.LocationEncounter = null;
+            }
+        }
+
+        private Settlement ResolveHomeSettlement()
+        {
             Settlement home = Hero.MainHero?.HomeSettlement;
-            if (home == null) return;
+            if (IsUsableSettlement(home))
+                return home;
 
-            EnterSettlementAction.ApplyForParty(mp, home);
+            home = MobileParty.MainParty?.HomeSettlement;
+            if (IsUsableSettlement(home))
+                return home;
 
-            string menuId = home.IsTown ? "town" : (home.IsCastle ? "castle" : "village");
-            GameMenu.ActivateGameMenu(menuId);
+            home = Hero.MainHero?.CurrentSettlement;
+            if (IsUsableSettlement(home))
+                return home;
+
+            home = Hero.MainHero?.BornSettlement;
+            return IsUsableSettlement(home) ? home : null;
+        }
+
+        private bool IsUsableSettlement(Settlement settlement)
+        {
+            return settlement != null
+                && settlement.IsActive
+                && settlement.Party != null
+                && settlement.SettlementComponent != null
+                && !settlement.IsHideout;
         }
 
         public override void SyncData(IDataStore dataStore) { }
